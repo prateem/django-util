@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gallery Index</title>
+</head>
+<body>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Album Title</th>
+                <th>Album Cover<br><small>(first image)</small></th>
+                <th>Number of Images</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for album in albums %}
+                <tr>
+                    <td><a href="{% url 'gallery:album' album.slug %}">{{ album.title }}</a></td>
+
+                    {% with cover=album.get_cover_image %}
+                        {% if cover %}
+                            <td>
+                                <b>{{ cover.title }}</b><br>
+                                <img src="{{ cover.thumbnail.url }}">
+                            </td>
+                        {% else %}
+                            <td><b>No images in album.</b></td>
+                        {% endif %}
+                    {% endwith %}
+
+                    <td>{{ album.images.count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

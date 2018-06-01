@@ -1,0 +1,144 @@
+{% load i18n admin_urls static admin_modify %}
+<div class="js-inline-admin-formset inline-group" id="{{ inline_admin_formset.formset.prefix }}-group"
+     data-inline-type="stacked"
+     data-inline-formset="{{ inline_admin_formset.inline_formset_data }}">
+    <div class="tabular inline-related {% if forloop.last %}last-related{% endif %}">
+        {{ inline_admin_formset.formset.management_form }}
+        <fieldset class="module {{ inline_admin_formset.classes }}">
+            <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
+            {{ inline_admin_formset.formset.non_form_errors }}
+
+            <div style="display: flex; flex-flow: row wrap; justify-content: space-evenly;" id="model-grid">
+            {% for inline_admin_form in inline_admin_formset %}
+                {% if inline_admin_form.form.non_field_errors %}
+                    {{ inline_admin_form.form.non_field_errors.as_ul }}
+                {% endif %}
+                <div style="flex: 1; padding: 1rem" class="{% if inline_admin_form.original or inline_admin_form.show_url %}has_original{% endif %}{% if forloop.last %} empty-form{% endif %}"
+                     id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+                    <div style="text-align: center">
+                        {% if inline_admin_form.original or inline_admin_form.show_url %}
+                            <p>
+                                {% if inline_admin_form.original %}
+                                    {{ inline_admin_form.original }}
+                                    {% if inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}<a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="inlinechangelink">{% trans "Change" %}</a>{% endif %}
+                                {% endif %}
+                                {% if inline_admin_form.show_url %}<a href="{{ inline_admin_form.absolute_url }}">{% trans "View on site" %}</a>{% endif %}
+                            </p>
+                        {% endif %}
+                        {% if inline_admin_form.needs_explicit_pk_field %}{{ inline_admin_form.pk_field.field }}{% endif %}
+                        {{ inline_admin_form.fk_field.field }}
+                        {% spaceless %}
+                            {% for fieldset in inline_admin_form %}
+                                {% for line in fieldset %}
+                                    {% for field in line %}
+                                        {% if field.field.is_hidden %} {{ field.field }} {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                        {% endspaceless %}
+                    </div>
+                    {% for fieldset in inline_admin_form %}
+                        <table>
+                            <tbody>
+                                {% for line in fieldset %}
+                                    {% for field in line %}
+                                        {% if not field.field.is_hidden %}
+                                            <tr{% if field.field.name %} class="field-{{ field.field.name }}"{% endif %}>
+                                                <td class="align-right{% if field.field.required %} required{% endif %}"><strong>{{ field.field.label|capfirst }}</strong></td>
+                                                <td{% if field.field.name %} id="form-{{ forloop.parentloop.parentloop.parentloop.counter0 }}-{{ field.field.name }}"{% endif %}>
+                                                    {% if field.is_readonly %}
+                                                        <p>{{ field.contents }}</p>
+                                                    {% else %}
+                                                        {{ field.field.errors.as_ul }}
+                                                        {{ field.field }}
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                {% if inline_admin_formset.formset.can_delete %}
+                                    {% if inline_admin_form.original %}
+                                        <tr>
+                                            <td class="align-right"><strong>{% trans "Delete?" %}</strong></td>
+                                            <td>{{ inline_admin_form.deletion_field.field }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            </div>
+        </fieldset>
+    </div>
+</div>
+
+<script>
+    (function($) {
+        $(document).ready(function() {
+            // ------------------------------------------
+            // ----- Grid styling
+            // ------------------------------------------
+            let update_grid_colors = function() {
+                let grid = $("div[id='model-grid']");
+                grid.children('div').removeClass("row1 row2");
+                grid.children('div:even').addClass("row1");
+                grid.children('div:odd').addClass("row2");
+            };
+
+            // Initial update when page loads
+            update_grid_colors();
+
+            // Also update every time another entry is added (i.e. when "Add another" is clicked)
+            $("div[id='{{ inline_admin_formset.formset.prefix }}-group']").children('div').last().find('a').click(function() {
+                update_grid_colors();
+            });
+
+            // ------------------------------------------
+            // ----- Pre-upload image previews
+            // ------------------------------------------
+            let update_preview = function(image) {
+                if (image.files && image.files[0]) {
+                    // Find the container id of this file upload field
+                    let container_id = $(image).parent('td').attr('id');
+
+                    // Coax it into the container id for the preview
+                    let id_elements = container_id.split("-");
+                    id_elements[id_elements.length - 1] = 'preview';
+
+                    let preview_container_id = id_elements.join("-");
+
+                    // Make sure we're actually working with an image.
+                    let mime = image.files[0]['type'];
+                    if (mime.split("/")[0] === "image") {
+                        let url = URL.createObjectURL(image.files[0]);
+                        let img = new Image();
+                        img.src = url;
+
+                        img.onload = function() {
+                            // Scale the image to a decent size.
+                            let ratio = this.width / this.height;
+                            let scaled_width = 300;
+                            let scaled_height = 300;
+
+                            if (this.width > this.height) {
+                                scaled_height = scaled_width / ratio
+                            } else {
+                                scaled_width = ratio * scaled_height;
+                            }
+
+                            $("td[id='" + preview_container_id + "']").children('p')
+                                .html("<img src='" + this.src + "' width='" + scaled_width + "' height='" + scaled_height + "'>");
+                        };
+                    } else {
+                        $("td[id='" + preview_container_id + "']").children('p').html("-");
+                    }
+                }
+            };
+
+            $("input[type='file']").change(function() { update_preview(this) });
+        });
+    })(django.jQuery);
+</script>

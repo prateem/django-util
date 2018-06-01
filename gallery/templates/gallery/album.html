@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ album.title }}</title>
+</head>
+<body>
+
+    <h2>{{ album.title }}</h2>
+
+    {% if album.images.count > 0 %}
+        <table border="1">
+            <tr>
+                {% for image in album.images.all %}
+                    <td>
+                        <a href="{{ image.image.url }}">
+                            <img src="{{ image.thumbnail.url }}" alt="{{ image.title }}" title="{{ image.title }}">
+                        </a>
+                    </td>
+
+                    {% if forloop.counter|divisibleby:4 %}
+                        </tr>
+                        <tr>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        </table>
+    {% else %}
+        <b>No images in album.</b>
+    {% endif %}
+
+</body>
+</html>
