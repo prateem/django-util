@@ -1,5 +1,6 @@
 class BootstrapFormMixin(object):
     """
+    For use with Django forms.
     Sets class="form-control" on all form fields except checkboxes and radios,
     for which it applies class="form-check-input".
 

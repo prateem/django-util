@@ -5,6 +5,7 @@ import math
 
 class SluggedMixin:
     """
+    For use with Django models.
     Creates a slug from _slugify='title' and stores it in _slug_field='slug'.
     Overwrite these fields as needed.
 
