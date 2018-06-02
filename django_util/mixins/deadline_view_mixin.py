@@ -29,4 +29,4 @@ class DeadlineViewMixin:
             raise ImproperlyConfigured("Deadline redirect url needs to be specified. Set deadline_url.")
         if self.is_past_deadline():
             return HttpResponseRedirect(str(self.deadline_url))
-        return super(DeadlineMixin, self).dispatch(request, *args, **kwargs)
+        return super(DeadlineViewMixin, self).dispatch(request, *args, **kwargs)
