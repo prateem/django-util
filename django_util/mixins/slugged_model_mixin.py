@@ -3,7 +3,7 @@ from django.core.exceptions import FieldError
 import math
 
 
-class SluggedMixin:
+class SluggedModelMixin:
     """
     For use with Django models.
     Creates a slug from _slugify='title' and stores it in _slug_field='slug'.

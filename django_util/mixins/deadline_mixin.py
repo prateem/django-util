@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.core.exceptions import ImproperlyConfigured
 
 
-class DeadlineMixin:
+class DeadlineViewMixin:
     """
     For use with Django generic views.
     Define deadline as a naive datetime.datetime object.
