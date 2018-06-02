@@ -6,7 +6,7 @@ from django.db.models.signals import pre_save
 from django.utils import timezone
 from django.core.files.base import ContentFile
 from django.utils.translation import gettext_lazy as _
-from django_util.mixins.slugged_model_mixin import SluggedMixin
+from django_util.mixins.slugged_model_mixin import SluggedModelMixin
 import os
 
 THUMBNAIL_MAX_SIZE = (300, 300)
@@ -22,7 +22,7 @@ def get_thumbnail_directory(instance, filename):
     return "%(upload_to)s/thumbnails/%(fn)s" % {'upload_to': upload_dir[:-len(filename)], 'fn': filename}
 
 
-class GalleryAlbum(SluggedMixin, models.Model):
+class GalleryAlbum(SluggedModelMixin, models.Model):
     title = models.CharField(verbose_name=_('Title'), max_length=60)
     slug = models.CharField(verbose_name=_('Slug'), max_length=60)
     description = models.CharField(verbose_name=_('Description'), max_length=100, blank=True, default=None)
