@@ -46,4 +46,4 @@ class SluggedModelMixin:
     def save(self, *args, **kwargs):
         if not getattr(self, self._slug_field, None):
             self._generate_unique_slug()
-        super(SluggedModelMixin, self).save(*args, **kwargs)
+        return super(SluggedModelMixin, self).save(*args, **kwargs)
